@@ -8,7 +8,7 @@ import { DraggableTodoRow } from '../components/DraggableTodoRow';
 import { PrivacyInfo } from '../components/PrivacyInfo';
 import { TodoEditor } from '../components/TodoEditor';
 import { TodoForm } from '../components/TodoForm';
-import { loadTodos, moveTodo, updateTodo } from '../storage/todoStorage';
+import { loadTodos, moveTodo, removeTodosBeforePreviousWeek, updateTodo } from '../storage/todoStorage';
 import { styles } from '../styles/appStyles';
 import type { Todo } from '../types/todo';
 import { dayNames, formatDate } from '../utils/date';
@@ -58,17 +58,21 @@ export function WeeklyPlanScreen() {
     setSelectedMonday(getWeek().monday);
   }, []);
 
-  const refreshTodos = () => {
+  const refreshTodos = (cleanupOldTodos = false) => {
     setLoading(true);
     setLoadError(false);
-    loadTodos()
+    const load = cleanupOldTodos
+      ? removeTodosBeforePreviousWeek().then(loadTodos)
+      : loadTodos();
+
+    load
       .then(setTodos)
       .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    refreshTodos();
+    refreshTodos(true);
   }, []);
 
   useEffect(() => {
@@ -283,7 +287,7 @@ export function WeeklyPlanScreen() {
                   {loading ? <ActivityIndicator accessibilityLabel="Görevler yükleniyor" color="#E76F51" style={styles.dayLoader} /> : loadError ? (
                      <View style={styles.errorState}>
                        <Text style={styles.errorStateText}>Görevler yüklenemedi.</Text>
-                       <Pressable accessibilityLabel="Görevleri yeniden yükle" accessibilityRole="button" onPress={refreshTodos} style={({ pressed }) => [styles.retryButton, pressed && styles.pressedButton]}>
+                       <Pressable accessibilityLabel="Görevleri yeniden yükle" accessibilityRole="button" onPress={() => refreshTodos()} style={({ pressed }) => [styles.retryButton, pressed && styles.pressedButton]}>
                          <Text style={styles.retryButtonText}>Tekrar dene</Text>
                        </Pressable>
                      </View>
@@ -334,11 +338,11 @@ export function WeeklyPlanScreen() {
         </ScrollView>
       </View>
 
-      <Modal animationType="slide" onRequestClose={() => setTodoDate(null)} transparent visible={todoDate !== null}>
-        {todoDate && <TodoForm initialDate={todoDate} onClose={() => setTodoDate(null)} onCreated={(todo) => { setTodos((current) => [...current, todo]); setTodoDate(null); }} />}
+       <Modal animationType="slide" onRequestClose={() => setTodoDate(null)} transparent visible={todoDate !== null}>
+         {todoDate && <TodoForm initialDate={todoDate} onClose={() => setTodoDate(null)} onCreated={(created) => { setTodos((current) => [...current, ...created]); setTodoDate(null); }} />}
       </Modal>
-      <Modal animationType="slide" onRequestClose={() => setEditingTodo(null)} transparent visible={editingTodo !== null}>
-        {editingTodo && <TodoEditor todo={editingTodo} onClose={() => setEditingTodo(null)} onDeleted={(id) => { setTodos((current) => current.filter((todo) => todo.id !== id)); setEditingTodo(null); }} onSaved={(todo) => { setTodos((current) => replaceTodo(current, todo)); setEditingTodo(null); }} />}
+       <Modal animationType="slide" onRequestClose={() => setEditingTodo(null)} transparent visible={editingTodo !== null}>
+         {editingTodo && <TodoEditor todo={editingTodo} onClose={() => setEditingTodo(null)} onDeleted={(ids) => { setTodos((current) => current.filter((todo) => !ids.includes(todo.id))); setEditingTodo(null); }} onSaved={(saved) => { setTodos((current) => saved.reduce((list, item) => replaceTodo(list, item), current)); setEditingTodo(null); }} />}
       </Modal>
       <Modal animationType="slide" onRequestClose={() => setShowPrivacyInfo(false)} transparent visible={showPrivacyInfo}>
         <PrivacyInfo onClose={() => setShowPrivacyInfo(false)} />

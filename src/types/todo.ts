@@ -9,6 +9,14 @@ export const TODO_TAGS = [
 
 export type TodoTag = (typeof TODO_TAGS)[number];
 
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly';
+
+export type Recurrence = {
+  id: string;
+  frequency: RecurrenceFrequency;
+  endDate: string;
+};
+
 export const TODO_TAG_LABELS: Record<TodoTag, string> = {
   meeting: 'Toplantı',
   work: 'İş',
@@ -38,6 +46,7 @@ export type Todo = {
   completed: boolean;
   order: number;
   manualOrder?: boolean;
+  recurrence?: Recurrence;
 };
 
 export type NewTodo = Omit<Todo, 'id' | 'order'> & { order?: number };

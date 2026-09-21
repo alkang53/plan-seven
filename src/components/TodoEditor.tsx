@@ -1,18 +1,18 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
-import { deleteTodo, updateTodo } from '../storage/todoStorage';
+import { deleteTodo, deleteTodoSeries, updateTodo, updateTodoSeries } from '../storage/todoStorage';
 import { styles } from '../styles/appStyles';
 import { TODO_TAG_ICONS, TODO_TAG_LABELS, TODO_TAGS, type Todo, type TodoTag } from '../types/todo';
 import { dateFromKey, formatDate, formatTime } from '../utils/date';
-import { toDateKey } from '../utils/week';
+import { addWeeks, getWeek, toDateKey } from '../utils/week';
 
 type Props = {
   todo: Todo;
   onClose: () => void;
-  onSaved: (todo: Todo) => void;
-  onDeleted: (id: string) => void;
+  onSaved: (todos: Todo[]) => void;
+  onDeleted: (ids: string[]) => void;
 };
 
 export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
@@ -23,6 +23,8 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
   const [picker, setPicker] = useState<'date' | 'time' | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const earliestAllowedDate = addWeeks(getWeek().monday, -1);
+  const editorScrollRef = useRef<ScrollView | null>(null);
 
   useEffect(() => {
     if (todo.time) {
@@ -33,23 +35,19 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
     }
   }, [todo.date, todo.time]);
 
-  const handleSubmit = async () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError('Görev başlığı gerekli.');
-      return;
-    }
+  const changes = {
+    ...(date === todo.date ? {} : { date }),
+    title: title.trim(),
+    time: time ? formatTime(time) : null,
+    tag,
+  };
 
-    setSaving(true);
-    setError('');
+  const saveChanges = async (allSeries: boolean) => {
     try {
-      const updatedTodo = await updateTodo(todo.id, {
-        date,
-        title: trimmedTitle,
-        time: time ? formatTime(time) : null,
-        tag,
-      });
-      if (updatedTodo) onSaved(updatedTodo);
+      const saved = allSeries && todo.recurrence
+        ? await updateTodoSeries(todo.recurrence.id, todo.date, changes)
+        : [await updateTodo(todo.id, changes)].filter((item): item is Todo => item !== null);
+      onSaved(saved);
     } catch {
       setError('Görev güncellenemedi. Lütfen tekrar dene.');
     } finally {
@@ -57,28 +55,73 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
     }
   };
 
+  const handleSubmit = async () => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError('Görev başlığı gerekli.');
+      requestAnimationFrame(() => editorScrollRef.current?.scrollTo({ animated: true, y: 0 }));
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    if (todo.recurrence) {
+      Alert.alert('Tekrarlı görev', 'Bu değişikliği nasıl uygulamak istersin?', [
+        { text: 'Sadece bu görev', onPress: () => saveChanges(false) },
+        { text: 'Tüm seri', onPress: () => saveChanges(true) },
+        { text: 'Vazgeç', style: 'cancel', onPress: () => setSaving(false) },
+      ]);
+    } else {
+      await saveChanges(false);
+    }
+  };
+
+  const deleteOne = async () => {
+    setSaving(true);
+    try {
+      await deleteTodo(todo.id);
+      onDeleted([todo.id]);
+    } catch {
+      setError('Görev silinemedi. Lütfen tekrar dene.');
+      setSaving(false);
+    }
+  };
+
+  const deleteSeries = async () => {
+    setSaving(true);
+    try {
+      const deletedIds = await deleteTodoSeries(todo.recurrence!.id);
+      onDeleted(deletedIds);
+    } catch {
+      setError('Görev serisi silinemedi. Lütfen tekrar dene.');
+      setSaving(false);
+    }
+  };
+
   const confirmDelete = () => {
+    if (todo.recurrence) {
+      Alert.alert('Tekrarlı görevi sil', 'Bu görevi nasıl silmek istersin?', [
+        { text: 'Sadece bu görev', onPress: deleteOne },
+        { text: 'Tüm seri', style: 'destructive', onPress: deleteSeries },
+        { text: 'Vazgeç', style: 'cancel' },
+      ]);
+      return;
+    }
+
     Alert.alert('Görevi silmek istediğinize emin misiniz?', undefined, [
       { text: 'Vazgeç', style: 'cancel' },
-      {
-        text: 'Sil',
-        style: 'destructive',
-        onPress: async () => {
-          setSaving(true);
-          try {
-            await deleteTodo(todo.id);
-            onDeleted(todo.id);
-          } catch {
-            setError('Görev silinemedi. Lütfen tekrar dene.');
-            setSaving(false);
-          }
-        },
-      },
+      { text: 'Sil', style: 'destructive', onPress: deleteOne },
     ]);
   };
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.modalRoot}>
+      <ScrollView
+        ref={editorScrollRef}
+        contentContainerStyle={styles.modalScrollContent}
+        keyboardShouldPersistTaps="handled"
+        style={styles.modalScroll}
+      >
       <View style={styles.modalCard}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Görevi Düzenle</Text>
@@ -105,6 +148,7 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
         {picker && (
           <DateTimePicker
             mode={picker}
+            minimumDate={picker === 'date' ? earliestAllowedDate : undefined}
             onDismiss={() => setPicker(null)}
             onValueChange={(_event, selected) => {
               const pickerType = picker;
@@ -135,6 +179,7 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
           </Pressable>
         </View>
       </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

@@ -129,6 +129,8 @@ export const styles = StyleSheet.create({
   todoTitle: { color: '#162235', flex: 1, flexShrink: 1, fontSize: 14, lineHeight: 19 },
   todoTagIcon: { color: '#526174', fontSize: 17, textAlign: 'center', width: 20 },
   modalRoot: { backgroundColor: 'rgba(22, 34, 53, 0.48)', flex: 1, justifyContent: 'flex-end' },
+  modalScroll: { flex: 1 },
+  modalScrollContent: { flexGrow: 1, justifyContent: 'flex-end' },
   modalCard: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 22,
@@ -164,6 +166,8 @@ export const styles = StyleSheet.create({
     padding: 14,
   },
   timeRow: { alignItems: 'center', flexDirection: 'row', gap: 12 },
+  recurrenceToggle: { alignItems: 'center', flexDirection: 'row', gap: 9, marginTop: 18, minHeight: 30 },
+  recurrenceLabel: { color: '#34445A', fontSize: 14, fontWeight: '700' },
   timeButton: {
     backgroundColor: '#F3F0EA',
     borderColor: '#D9D5CE',

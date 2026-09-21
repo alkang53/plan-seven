@@ -7,9 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.guleralparslan.planseven",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.guleralparslan.planseven",
       "adaptiveIcon": {
         "backgroundColor": "#D9E8D4",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -23,6 +25,11 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90a992cf-f3ef-414d-a083-2a3d78f13367"
+      }
+    }
   }
 }

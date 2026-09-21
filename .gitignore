@@ -38,6 +38,7 @@ yarn-error.*
 AGENTS.md
 CLAUDE.md
 DEVELOPMENT_PLAN.md
+RELEASE_GUIDE.md
 
 # typescript
 *.tsbuildinfo

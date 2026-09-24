@@ -1,6 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { addRecurringTodos, addTodo } from '../storage/todoStorage';
 import { styles } from '../styles/appStyles';
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function TodoForm({ initialDate, onClose, onCreated }: Props) {
+  const insets = useSafeAreaInsets();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState<Date | null>(null);
@@ -77,7 +79,7 @@ export function TodoForm({ initialDate, onClose, onCreated }: Props) {
         keyboardShouldPersistTaps="handled"
         style={styles.modalScroll}
       >
-      <View style={styles.modalCard}>
+      <View style={[styles.modalCard, { paddingBottom: 26 + insets.bottom }]}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Planına Ekle</Text>
           <Pressable accessibilityLabel="Görev ekleme penceresini kapat" accessibilityRole="button" onPress={onClose} style={styles.closeButton}>

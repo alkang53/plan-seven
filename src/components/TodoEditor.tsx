@@ -1,6 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { deleteTodo, deleteTodoSeries, updateTodo, updateTodoSeries } from '../storage/todoStorage';
 import { styles } from '../styles/appStyles';
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
+  const insets = useSafeAreaInsets();
   const [title, setTitle] = useState(todo.title);
   const [date, setDate] = useState(todo.date);
   const [time, setTime] = useState<Date | null>(todo.time ? dateFromKey(todo.date) : null);
@@ -122,7 +124,7 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
         keyboardShouldPersistTaps="handled"
         style={styles.modalScroll}
       >
-      <View style={styles.modalCard}>
+      <View style={[styles.modalCard, { paddingBottom: 26 + insets.bottom }]}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Görevi Düzenle</Text>
           <Pressable accessibilityLabel="Görev düzenleme penceresini kapat" accessibilityRole="button" disabled={saving} onPress={onClose} style={styles.closeButton}>

@@ -147,6 +147,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 26,
   },
   infoTitleBlock: { flex: 1 },
+  infoScroll: { flexShrink: 1 },
   infoContent: { paddingBottom: 4 },
   infoLead: { color: '#34445A', fontSize: 16, lineHeight: 24, marginBottom: 6 },
   infoSectionTitle: { color: '#162235', fontSize: 15, fontWeight: '800', marginTop: 18 },

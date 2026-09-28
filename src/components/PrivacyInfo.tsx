@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { styles } from '../styles/appStyles';
 
@@ -8,9 +9,10 @@ type Props = {
 };
 
 export function PrivacyInfo({ firstUse = false, onClose }: Props) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.modalRoot}>
-      <View style={styles.infoCard}>
+      <View style={[styles.infoCard, { paddingBottom: 26 + insets.bottom }]}>
         <View style={styles.modalHeader}>
           <View style={styles.infoTitleBlock}>
             <Text style={styles.modalTitle}>{firstUse ? 'Hoşgeldin' : 'Gizlilik ve Ayarlar'}</Text>

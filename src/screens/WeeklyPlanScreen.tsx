@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DraggableTodoRow } from '../components/DraggableTodoRow';
 import { PrivacyInfo } from '../components/PrivacyInfo';
@@ -22,6 +22,7 @@ type TodoLayout = Layout & { date: string; localY: number };
 const PRIVACY_NOTICE_KEY = '@haftalik-plan/privacy-notice-seen';
 
 export function WeeklyPlanScreen() {
+  const insets = useSafeAreaInsets();
   const currentWeek = getWeek();
   const [selectedMonday, setSelectedMonday] = useState(currentWeek.monday);
   const week = getWeekDates(selectedMonday);
@@ -256,7 +257,7 @@ export function WeeklyPlanScreen() {
         <ScrollView
           ref={dayScrollRef}
           style={styles.dayScroll}
-          contentContainerStyle={styles.dayScrollContent}
+          contentContainerStyle={[styles.dayScrollContent, { paddingBottom: 18 + insets.bottom }]}
           onContentSizeChange={(_width, height) => { scrollContentHeight.current = height; }}
           onLayout={(event) => { dayScrollHeight.current = event.nativeEvent.layout.height; }}
           onScroll={(event) => { scrollOffset.current = event.nativeEvent.contentOffset.y; }}

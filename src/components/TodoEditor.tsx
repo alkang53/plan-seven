@@ -7,7 +7,7 @@ import { deleteTodo, deleteTodoSeries, updateTodo, updateTodoSeries } from '../s
 import { styles } from '../styles/appStyles';
 import { TODO_TAG_ICONS, TODO_TAG_LABELS, TODO_TAGS, type Todo, type TodoTag } from '../types/todo';
 import { dateFromKey, formatDate, formatTime } from '../utils/date';
-import { addWeeks, getWeek, toDateKey } from '../utils/week';
+import { toDateKey } from '../utils/week';
 
 type Props = {
   todo: Todo;
@@ -25,7 +25,6 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
   const [picker, setPicker] = useState<'date' | 'time' | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const earliestAllowedDate = addWeeks(getWeek().monday, -1);
   const editorScrollRef = useRef<ScrollView | null>(null);
 
   useEffect(() => {
@@ -150,7 +149,6 @@ export function TodoEditor({ todo, onClose, onSaved, onDeleted }: Props) {
         {picker && (
           <DateTimePicker
             mode={picker}
-            minimumDate={picker === 'date' ? earliestAllowedDate : undefined}
             onDismiss={() => setPicker(null)}
             onValueChange={(_event, selected) => {
               const pickerType = picker;

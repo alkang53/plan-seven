@@ -27,6 +27,13 @@ export function formatDate(date: Date) {
   return `${date.getDate()} ${monthNames[date.getMonth()]}`;
 }
 
+export function formatDateRange(start: Date, end: Date) {
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    return `${start.getDate()}-${end.getDate()} ${monthNames[end.getMonth()]}`;
+  }
+  return `${formatDate(start)} - ${formatDate(end)}`;
+}
+
 export function formatTime(date: Date) {
   return `${String(date.getHours()).padStart(2, '0')}:${String(
     date.getMinutes(),

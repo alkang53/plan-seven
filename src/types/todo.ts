@@ -27,12 +27,12 @@ export const TODO_TAG_LABELS: Record<TodoTag, string> = {
 };
 
 export const TODO_TAG_ICONS: Record<TodoTag, string> = {
-  meeting: '🗓️',
-  work: '💼',
-  privateLife: '👨‍👩‍👧',
-  health: '❤️',
-  personal: '🎯',
-  other: '📌',
+  meeting: '▦',
+  work: '▣',
+  privateLife: '⌂',
+  health: '♡',
+  personal: '◎',
+  other: '•',
 };
 
 export const DEFAULT_TODO_TAG: TodoTag = 'other';

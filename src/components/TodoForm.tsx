@@ -15,7 +15,7 @@ import {
   type RecurrenceFrequency,
 } from '../types/todo';
 import { dateFromKey, formatDate, formatTime } from '../utils/date';
-import { addWeeks, getWeek, toDateKey } from '../utils/week';
+import { toDateKey } from '../utils/week';
 
 type Props = {
   initialDate: string;
@@ -37,7 +37,6 @@ export function TodoForm({ initialDate, onClose, onCreated }: Props) {
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const earliestAllowedDate = addWeeks(getWeek().monday, -1);
   const maxEndDate = new Date(dateFromKey(date));
   maxEndDate.setMonth(maxEndDate.getMonth() + 3);
   const formScrollRef = useRef<ScrollView | null>(null);
@@ -114,7 +113,6 @@ export function TodoForm({ initialDate, onClose, onCreated }: Props) {
         {showDatePicker && (
           <DateTimePicker
             mode="date"
-            minimumDate={earliestAllowedDate}
             onDismiss={() => setShowDatePicker(false)}
              onValueChange={(_event, selected) => {
                setShowDatePicker(false);

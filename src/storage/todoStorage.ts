@@ -8,7 +8,7 @@ import {
   type TodoTag,
   type RecurrenceFrequency,
 } from '../types/todo';
-import { addWeeks, getWeek, toDateKey } from '../utils/week';
+import { addWeeks, toDateKey } from '../utils/week';
 
 export const TODOS_STORAGE_KEY = '@haftalik-plan/todos';
 
@@ -78,18 +78,22 @@ const sortDayTodos = (todos: Todo[]) => {
 
 export const loadTodos = readTodos;
 
-const earliestAllowedTodoDate = () => toDateKey(addWeeks(getWeek().monday, -1));
-const maximumRecurrenceDate = (date: string) => {
-  const result = new Date(`${date}T12:00:00`);
-  result.setMonth(result.getMonth() + 3);
-  return toDateKey(result);
+const oneMonthAgoDateKey = () => {
+  const cutoff = new Date();
+  const dayOfMonth = cutoff.getDate();
+  cutoff.setHours(12, 0, 0, 0);
+  cutoff.setDate(1);
+  cutoff.setMonth(cutoff.getMonth() - 1);
+  const lastDayOfPreviousMonth = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0).getDate();
+  cutoff.setDate(Math.min(dayOfMonth, lastDayOfPreviousMonth));
+  return toDateKey(cutoff);
 };
 
-export const removeTodosBeforePreviousWeek = async (): Promise<void> => {
+export const removeTodosOlderThanOneMonth = async (): Promise<void> => {
   const todos = await readTodos();
-  const previousWeekStart = toDateKey(addWeeks(getWeek().monday, -1));
-  const retainedTodos = todos.filter(({ date }) => date >= previousWeekStart);
-
+  const cutoff = oneMonthAgoDateKey();
+  const retainedTodos = todos.filter(({ date }) => date >= cutoff);
+  if (retainedTodos.length === todos.length) return;
   if (retainedTodos.length > 0) {
     await writeTodos(retainedTodos);
   } else {
@@ -97,15 +101,17 @@ export const removeTodosBeforePreviousWeek = async (): Promise<void> => {
   }
 };
 
+const maximumRecurrenceDate = (date: string) => {
+  const result = new Date(`${date}T12:00:00`);
+  result.setMonth(result.getMonth() + 3);
+  return toDateKey(result);
+};
+
 export const addTodo = async (input: NewTodo): Promise<Todo> => {
   const title = input.title.trim();
   if (!title) {
     throw new Error('Görev basligi bos olamaz.');
   }
-  if (input.date < earliestAllowedTodoDate()) {
-    throw new Error('Gecmis haftalardaki tarihlere gorev eklenemez.');
-  }
-
   const todos = await readTodos();
   const todo: Todo = {
     ...input,
@@ -173,7 +179,7 @@ export const addRecurringTodos = async (
 ): Promise<Todo[]> => {
   const title = input.title.trim();
   if (!title) throw new Error('Görev basligi bos olamaz.');
-  if (input.date < earliestAllowedTodoDate() || endDate < input.date || endDate > maximumRecurrenceDate(input.date)) {
+  if (endDate < input.date || endDate > maximumRecurrenceDate(input.date)) {
     throw new Error('Geçersiz tekrar tarihleri.');
   }
 
@@ -215,10 +221,6 @@ export const updateTodo = async (
     ...changes,
     ...(changes.title === undefined ? {} : { title: changes.title.trim() }),
   };
-
-  if (nextTodo.date < earliestAllowedTodoDate()) {
-    throw new Error('Gecmis haftalardaki tarihlere gorev tasinamaz.');
-  }
 
   if (!isTodo(nextTodo)) {
     throw new Error('Geçersiz görev verisi.');

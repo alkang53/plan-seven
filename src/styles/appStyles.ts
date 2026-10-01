@@ -168,6 +168,8 @@ export const styles = StyleSheet.create({
   infoLead: { color: '#374151', fontSize: 16, lineHeight: 24, marginBottom: 6 },
   infoSectionTitle: { color: '#111827', fontSize: 15, fontWeight: '700', marginTop: 18 },
   infoText: { color: '#4B5563', fontSize: 14, lineHeight: 21, marginTop: 6 },
+  privacyPolicyLink: { alignSelf: 'flex-start', borderRadius: 8, marginTop: 10, paddingVertical: 8 },
+  privacyPolicyLinkText: { color: '#2563EB', fontSize: 14, fontWeight: '600' },
   modalHeader: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   modalTitle: { color: '#111827', fontSize: 22, fontWeight: '700', marginTop: 5 },
   closeButton: { alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20, height: 40, justifyContent: 'center', width: 40 },

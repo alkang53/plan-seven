@@ -8,10 +8,10 @@ import { DraggableTodoRow } from '../components/DraggableTodoRow';
 import { PrivacyInfo } from '../components/PrivacyInfo';
 import { TodoEditor } from '../components/TodoEditor';
 import { TodoForm } from '../components/TodoForm';
-import { loadTodos, moveTodo, removeTodosBeforePreviousWeek, updateTodo } from '../storage/todoStorage';
+import { loadTodos, moveTodo, removeTodosOlderThanOneMonth, updateTodo } from '../storage/todoStorage';
 import { styles } from '../styles/appStyles';
 import type { Todo } from '../types/todo';
-import { dayNames, formatDate } from '../utils/date';
+import { dayNames, formatDate, formatDateRange } from '../utils/date';
 import { replaceTodo, sortTodos } from '../utils/todos';
 import { addWeeks, getWeek, getWeekDates, toDateKey } from '../utils/week';
 
@@ -53,7 +53,6 @@ export function WeeklyPlanScreen() {
   const todayHeadingHeight = useRef(0);
   const dayScrollHeight = useRef(0);
   const isCurrentWeek = toDateKey(selectedMonday) === toDateKey(currentWeek.monday);
-  const isEarliestWeek = toDateKey(selectedMonday) === toDateKey(addWeeks(currentWeek.monday, -1));
 
   useEffect(() => {
     setSelectedMonday(getWeek().monday);
@@ -63,7 +62,7 @@ export function WeeklyPlanScreen() {
     setLoading(true);
     setLoadError(false);
     const load = cleanupOldTodos
-      ? removeTodosBeforePreviousWeek().then(loadTodos)
+      ? removeTodosOlderThanOneMonth().then(loadTodos)
       : loadTodos();
 
     load
@@ -238,10 +237,10 @@ export function WeeklyPlanScreen() {
           </Pressable>
         </View>
         <View style={styles.planHeader}>
-          <Text style={styles.planTitle}>{formatDate(firstDay)} - {formatDate(lastDay)}</Text>
+          <Text style={styles.planTitle}>{formatDateRange(firstDay, lastDay)}</Text>
           <View style={styles.navigation}>
-            <Pressable accessibilityLabel="Önceki haftaya git" accessibilityRole="button" disabled={isEarliestWeek} onPress={() => setSelectedMonday(addWeeks(selectedMonday, -1))} style={({ pressed }) => [styles.arrowButton, isEarliestWeek && styles.disabledButton, pressed && !isEarliestWeek && styles.pressedButton]}>
-              <Text style={[styles.arrow, isEarliestWeek && styles.disabledText]}>‹</Text>
+             <Pressable accessibilityLabel="Önceki haftaya git" accessibilityRole="button" onPress={() => setSelectedMonday(addWeeks(selectedMonday, -1))} style={({ pressed }) => [styles.arrowButton, pressed && styles.pressedButton]}>
+               <Text style={styles.arrow}>‹</Text>
             </Pressable>
             <Pressable accessibilityLabel="Bugüne dön" accessibilityRole="button" onPress={() => setSelectedMonday(currentWeek.monday)} style={({ pressed }) => [styles.titleButton, pressed && styles.pressedButton]}>
               <Text style={styles.navigationLabel}>Bugün</Text>
@@ -279,13 +278,14 @@ export function WeeklyPlanScreen() {
                       todayHeight.current = event.nativeEvent.layout.height;
                     }
                   }}
-                  style={[styles.dayCard, dateKey === todayKey && styles.todayCard]}
+                   style={[styles.dayCard, dateKey === todayKey && styles.todayDayCard]}
                 >
-                  <View onLayout={(event) => { if (dateKey === todayKey) todayHeadingHeight.current = event.nativeEvent.layout.height; }} style={styles.dayHeading}>
+                   <View onLayout={(event) => { if (dateKey === todayKey) todayHeadingHeight.current = event.nativeEvent.layout.height; }} style={[styles.dayHeading, dateKey === todayKey && styles.todayDayHeading]}>
                     <Text style={styles.dayName}>{dayNames[date.getDay()]}</Text>
                     <Text style={styles.dayDate}>{formatDate(date)}</Text>
+                    <Text style={styles.dayCount}>{dayTodos.length} görev</Text>
                   </View>
-                  {loading ? <ActivityIndicator accessibilityLabel="Görevler yükleniyor" color="#E76F51" style={styles.dayLoader} /> : loadError ? (
+                   {loading ? <ActivityIndicator accessibilityLabel="Görevler yükleniyor" color="#3B82F6" style={styles.dayLoader} /> : loadError ? (
                      <View style={styles.errorState}>
                        <Text style={styles.errorStateText}>Görevler yüklenemedi.</Text>
                        <Pressable accessibilityLabel="Görevleri yeniden yükle" accessibilityRole="button" onPress={() => refreshTodos()} style={({ pressed }) => [styles.retryButton, pressed && styles.pressedButton]}>

@@ -13,7 +13,7 @@
     "android": {
       "package": "com.guleralparslan.planseven",
       "adaptiveIcon": {
-        "backgroundColor": "#D9E8D4",
+        "backgroundColor": "#EFF6FF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },

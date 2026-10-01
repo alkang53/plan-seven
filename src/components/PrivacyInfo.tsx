@@ -1,7 +1,9 @@
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { styles } from '../styles/appStyles';
+
+const PRIVACY_POLICY_URL = 'https://alkang53.github.io/plan-seven/privacy-policy.html';
 
 type Props = {
   firstUse?: boolean;
@@ -30,6 +32,11 @@ export function PrivacyInfo({ firstUse = false, onClose }: Props) {
           <Text style={styles.infoText}>Görevlerin yalnızca bu cihazdaki yerel depolama alanında saklanır. Hesap açman veya bir sunucuya bağlanman gerekmez.</Text>
           <Text style={styles.infoSectionTitle}>Verileri silme</Text>
           <Text style={styles.infoText}>Görevleri uygulama içindeki silme işlemiyle tek tek kaldırabilirsin. Uygulamayı cihazından sildiğinde, bu cihazda tutulan yerel görev verileri de silinir.</Text>
+          <Text style={styles.infoSectionTitle}>Gizlilik Politikası</Text>
+          <Text style={styles.infoText}>Verilerin nasıl işlendiği, saklandığı ve silindiği hakkında ayrıntılı bilgi al.</Text>
+          <Pressable accessibilityRole="link" onPress={() => { void Linking.openURL(PRIVACY_POLICY_URL); }} style={styles.privacyPolicyLink}>
+            <Text style={styles.privacyPolicyLinkText}>Gizlilik Politikasını aç ↗</Text>
+          </Pressable>
           <Text style={styles.infoSectionTitle}>Gelecekteki senkronizasyon</Text>
           <Text style={styles.infoText}>Takvim veya başka bir hizmetle senkronizasyon şu anda etkin değildir. İleride eklenirse yalnızca senin açık iznin ve bağlantınla çalışacaktır.</Text>
         </ScrollView>
